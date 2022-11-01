@@ -1,0 +1,13 @@
+prefix: "library"
+enzyme: "MboI"
+reference: "GRCh38"
+phase: "unphased"
+gender: "female"
+run_dipc: True
+run_model: True
+pip_dir: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/Github/Pipeline/scHic/"
+hickit: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/software/hickit-master/hickit"
+dipc_dir: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/software/dip-c-master/"
+par_bed: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/database/GRCh38_ref/hg38_par_region.bed"
+reps: [1, 2, 3]
+resolution: ['1m','100k','50k']
