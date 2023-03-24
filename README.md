@@ -1,6 +1,6 @@
-# README for scNanoHiC
+# README
 
-Last edited time: March 24, 2023 3:44 PM
+Last edited time: March 24, 2023 3:47 PM
 
 ## Introduction
 
@@ -58,7 +58,7 @@ The main script of this step is `filter_contacts.smk` , which could be  run with
     
 - **reconstruct single-cell 3D models**
     
-    The haplotype-tagged virtual pair-wise contacts from scNanoHi-C were used for haplotype imputation and single-cell 3D genome structure model reconstruction by hickit and dip-C packages.The high-depth data (24 cells per run) of scNanoHi-C were recommended for 3D genome construction.
+    The haplotype-tagged virtual pair-wise contacts from scNanoHi-C were used for haplotype imputation and single-cell 3D genome structure model reconstruction by [hickit](https://github.com/lh3/hickit) and [dip-C](https://github.com/tanlongzhi/dip-c) packages.The high-depth data (24 cells per run) of scNanoHi-C were recommended for 3D genome construction.
     
 - **generate quality control metric for downstream analysis**
 - **calculated the single-cell A/B compartment values (scA/B)**
