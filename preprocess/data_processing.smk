@@ -18,7 +18,8 @@ rule all:
         trim_data_files,
         "raw_fastq.stats",
         "trim_fastq.stats",
-
+        "datasize_summary",
+        
 rule barcode_generate:
     input:
         index = "bc_index",
@@ -99,4 +100,33 @@ rule trim_data_stats:
     shell: """
         seqkit stats -a -T -j {threads} \
             {input.fq} > {output}
+    """
+
+rule check_datasize:
+    input:
+        raw = rules.raw_data_stats.output,
+        trim = rules.trim_data_stats.output,
+    output:
+        "datasize_summary",
+    shell: """
+        raw_used=`cat raw_fastq.stats | sed 1d |
+        grep -v un | awk '{{sum+=$5}};END{{print sum}}'`
+        raw_total=`cat raw_fastq.stats | sed 1d |
+        awk '{{sum+=$5}};END{{print sum}}'`
+        raw_un=`cat raw_fastq.stats | sed 1d | grep un |
+        awk '{{sum+=$5}};END{{print sum}}'`
+
+        trim_total=`cat trim_fastq.stats | sed 1d |
+        awk '{{sum+=$5}};END{{print sum}}'`
+        trim_used=`cat trim_fastq.stats | sed 1d |
+        grep -v un | awk '{{sum+=$5}};END{{print sum}}'`
+        trim_un=`cat trim_fastq.stats | sed 1d | grep un |
+        awk '{{sum+=$5}};END{{print sum}}'`
+
+        echo -e "raw_total\\t$raw_total" > {output}
+        echo -e "raw_classified\\t$raw_used" >> {output}
+        echo -e "raw_unclassified\\t$raw_un" >> {output}
+        echo -e "trim_total\\t$trim_total" >> {output}
+        echo -e "trim_classified\\t$trim_used" >> {output}
+        echo -e "trim_unclassified\\t$trim_un" >> {output}
     """

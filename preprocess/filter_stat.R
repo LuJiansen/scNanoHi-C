@@ -48,9 +48,9 @@ order_stat <- function(flt){
 }
 
 mn_phased <- function(flt){
-  df <- unique(rbind(flt[,c("read_idx","align1_align_idx","align1_fragment_id","align1_haplotype")] %>%
+  df <- unique(rbind(flt[,c("read_name","align1_align_idx","align1_fragment_id","align1_haplotype")] %>%
                        `colnames<-`(c("read_idx","align_idx","align_fragment_id","haplotype")),
-                     flt[,c("read_idx","align1_align_idx","align2_fragment_id","align2_haplotype")] %>%
+                     flt[,c("read_name","align1_align_idx","align2_fragment_id","align2_haplotype")] %>%
                        `colnames<-`(c("read_idx","align_idx","align_fragment_id","haplotype"))))
   dim(df)
   dim(unique(df[1:4]))
@@ -65,16 +65,16 @@ mn_phased <- function(flt){
 }
 
 len_stat <- function(flt){
-  df <- rbind(flt[,c("read_idx","align1_align_idx","align1_fragment_id","align1_start","align1_end")] %>%
+  df <- rbind(flt[,c("read_name","align1_align_idx","align1_fragment_id","align1_start","align1_end")] %>%
                 `colnames<-`(c("read_idx","align_idx","align_fragment_id","start","end")),
-              flt[,c("read_idx","align2_align_idx","align2_fragment_id","align2_start","align2_end")] %>%
+              flt[,c("read_name","align2_align_idx","align2_fragment_id","align2_start","align2_end")] %>%
                 `colnames<-`(c("read_idx","align_idx","align_fragment_id","start","end")))
   df <- unique(df)
   df$length <- abs(df$end - df$start)
   cat("summary of monomer length:\n")
   print(summary(df$length))
   
-  df2 <- flt[,c("read_idx","read_length")] %>% unique()
+  df2 <- flt[,c("read_name","read_length")] %>% unique()
   cat("summary of read length:\n")
   print(summary(df2$read_length))
   len_stat <- setNames(c(median(df$length),
@@ -90,11 +90,12 @@ flt.stat2 <- flt_Stat2(flt)
 print(flt.stat2)
 order.stat <- order_stat(flt)
 high_order = setNames(round(100-order.stat$pct[1],digits = 2),"high_order")
+direct_contacts = setNames(sum(flt$contact_is_direct),"direct_contacts")
 
 flt.stat3 <- mn_phased(flt)
 len_stat <- len_stat(flt)
 
-flt.stat <- c(flt.stat2,len_stat,high_order,flt.stat3,flt.stat1) %>% as.data.frame()
+flt.stat <- c(flt.stat2,len_stat,high_order,direct_contacts,flt.stat3,flt.stat1) %>% as.data.frame()
 colnames(flt.stat) <- sample_name
 flt.stat$variable <- rownames(flt.stat)
 print(flt.stat)

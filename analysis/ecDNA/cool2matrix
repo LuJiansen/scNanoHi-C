@@ -1,0 +1,25 @@
+#!/bin/bash
+input=$1
+chr=${2:-'all'}
+res=${3:-5000000}
+out=${4:-'none'}
+
+if [ $out == 'none' ];then
+	output=${input%%.mcool}_${res}_${chr}_mtx.gz
+else
+	output=${out}
+fi
+
+echo $chr
+echo $res
+echo $output
+
+if [ ${chr} == "all" ];then
+	cooler dump ${input}::resolutions/${res} | pigz > ${output}
+elif [ ${chr} == "bins" ];then
+	cooler dump -t 'bins' --join ${input}::resolutions/${res} |
+		awk '{print $1,$2,$3}' OFS='\t' | pigz > ${output}
+else
+	cooler dump -r "${chr}" -r2 "${chr}" \
+		${input}::resolutions/${res} | pigz > ${output}
+fi

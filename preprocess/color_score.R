@@ -18,7 +18,7 @@ names(color.files) <- gsub(paste0(enzyme,"_"),"",basename(color.files)) %>%
 
 color <- lapply(color.files, function(x){
   df <- read.table(x,header = F)
-  name <- gsub("MboI_","",basename(x)) %>%
+  name <- gsub(paste0(enzyme,"_"),"",basename(x)) %>%
     gsub(file_pattern1,"",.) %>% 
     gsub(file_pattern2,"",.)
   colnames(df) <- c("chr","pos",name)
