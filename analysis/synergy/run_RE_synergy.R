@@ -1,14 +1,14 @@
 source('synergy_funcs.R')
 
-prefix="all"
+prefix="GM12878"
 mc.cores.used = 10
 hg38.ref <- readRDS('hg38_seqinfo.rds')
 bins <- readRDS('scCh_20k_bins.rds')
 gc_frag_cov <- readRDS('gc_frag_cov.rds')
-targets_EP <- readRDS("GM12878_chromHMM_20k_RE_targets.rds")
+targets_EP <- readRDS(paste0(prefix,"_chromHMM_20k_RE_targets.rds"))
 EP.bins <- make_window_bins(windows = targets_EP)
 
-all.gr <- readRDS('mono_all_gr.rds')
+all.gr <- readRDS(paste0(prefix,"_mono_all_gr.rds"))
 
 all.EP = all.gr[gr.in(all.gr,targets_EP)]
 all.EP$cid = all.EP$read_idx
@@ -43,9 +43,9 @@ re_bs_ov.score <- sscore(re.bs.scann, re_reads_model, re_cells_model)
 re_synergy = synergy(re_bs_ov.score, re_reads_model, re_cells_model)
 unique(re_synergy$binsets$bid) %>% length()
 
-saveRDS(re.cc,"RE_cc.rds")
-saveRDS(re.bs,"RE_bs.rds")
-saveRDS(re.bs.scann,"RE_bs_scann.rds")
-saveRDS(re_back_gr,"RE_back.rds")
-saveRDS(re_back_gr.ann,"RE_back_ann.rds")
-saveRDS(re_synergy,"RE_sng.rds")
+saveRDS(re.cc,paste0(prefix,"_RE_cc.rds"))
+saveRDS(re.bs,paste0(prefix,"_RE_bs.rds"))
+saveRDS(re.bs.scann,paste0(prefix,"_RE_bs_scann.rds"))
+saveRDS(re_back_gr,paste0(prefix,"_RE_back.rds"))
+saveRDS(re_back_gr.ann,paste0(prefix,"_RE_back_ann.rds"))
+saveRDS(re_synergy,paste0(prefix,"_RE_sng.rds"))
