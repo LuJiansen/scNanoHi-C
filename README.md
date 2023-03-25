@@ -1,6 +1,6 @@
 # scNanoHi-C
 
-Last edited time: March 25, 2023 9:27 PM
+Last edited time: March 25, 2023 9:52 PM
 
 ## Introduction
 
@@ -9,6 +9,8 @@ scNanoHi-C is a single-cell long-read concatemer sequencing method which could b
 ## Usage
 
 ### Demultiplex and remove adapter sequences
+
+scNanoHi-C sequencing data was first demultiplexed to single cells by [Nanoplexer](https://github.com/hanyue36/nanoplexer) using known cell barcodes with default parameters. Adapter sequences were trimmed by [Cutadapt](https://github.com/marcelm/cutadapt) and reads shorter than 500bp were also removed.
 
 - Input files:
     - `pass.fastq.gz` the output sequencing data from Nanopore platform;
@@ -49,9 +51,9 @@ scNanoHi-C is a single-cell long-read concatemer sequencing method which could b
 
 ### Run Pore-C-Snakemake to generate concatemers
 
-trimmed fastq files for single cell were used to run default Pore-C-Snakemake workflow, see details in [Pore-C-Snakemake](https://github.com/nanoporetech/Pore-C-Snakemake).
+Trimmed fastq files for single cell were then used to run default Pore-C-Snakemake workflow, see details in [Pore-C-Snakemake](https://github.com/nanoporetech/Pore-C-Snakemake).
 
-### Run single-cell filtration and quality control pipeline
+### Run single-cell preprocessing pipeline of scNanoHi-C
 
 The main script of this step is `filter_contacts.smk` , which could be  run with the shell script `run_smk.sh` . This step is consist of following sections
 
@@ -88,7 +90,7 @@ The main script of this step is `filter_contacts.smk` , which could be  run with
     - `RMSD_summary.txt` : summary of RMSD of all models.
     - `cpg_2d_*_b1m_summary.csv` : matrix of 2D scA/B values in all cells.
     
-    These outputs could be optional by adjusting the `rule all` in `filter_contacts.smk` .
+    These outputs could be optional selected by adjusting the `rule all` in `filter_contacts.smk`.
     
 - usage:
     
