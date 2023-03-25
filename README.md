@@ -1,4 +1,4 @@
-# README
+# scNanoHi-C
 
 Last edited time: March 24, 2023 3:47 PM
 
