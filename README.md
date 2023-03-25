@@ -1,6 +1,6 @@
 # scNanoHi-C
 
-Last edited time: March 24, 2023 3:47 PM
+Last edited time: March 25, 2023 9:27 PM
 
 ## Introduction
 
@@ -12,15 +12,26 @@ scNanoHi-C is a single-cell long-read concatemer sequencing method which could b
 
 - Input files:
     - `pass.fastq.gz` the output sequencing data from Nanopore platform;
-    - `bc_index` a tab-separated file containing PCR barcodes (1-96) in the first column and an optional library name in second column as follows:
+    - `bc_index` a tab-separated file containing PCR barcodes (1-96) in the first column, the start and end of TN5 barcodes (1-24) in the second and third column and an optional library name in the fourth column as follows:
         
-        ```
+        ```bash
         $ head bc_index
-        65
-        66
-        67
-        68
+        25      1       8       A
+        25      17      24      A
+        26      9       16      B
+        27      17      24      C
         ```
+        
+        The resulted name of cells in this example will be:
+        
+        ```bash
+        A25B1
+        A25B2
+        ...
+        C27B24
+        ```
+        
+        And the library name will assign with ‘P’, if the library name was not supplied. In default, if the file contains only the first column, all 1-24 TN5 barcodes will be used for each PCR barcode.
         
 - Output files:
     - `raw_data/`  containing raw fastq files for each single cell
