@@ -21,7 +21,13 @@ gr0 <- function(df,keep = T,zero = T){
   makeGRangesFromDataFrame(df,starts.in.df.are.0based = zero,
                            keep.extra.columns = keep)
 }
-
+ov_table <- function(query,subject){
+  ov = subject %*% query[, c('read_idx','cell','haplotype','multiway')] %>% 
+    as.data.table
+  ov.read.uniq <- ov[,c("query.id","read_idx","cell","haplotype","multiway")] %>% 
+    unique()
+  return(ov.read.uniq)
+}
 multi_enh_reads <- function(gr,gene,range = gene.range,
                             pro = gene_pos.flt){
   if (gene %in% pro$gene) {
@@ -136,6 +142,8 @@ ABC_pos.ann.gr <- gr0(ABC_pos.ann[,c("id","gene","name")] %>%
                                     end = max(id),
                                     seqnames = "bins"),
                            zero = F)
+                           
+# treat the enhancers from 1 bin as one enhancer cluster
 ABC_pos.ann.gr <- gr.reduce(ABC_pos.ann.gr,by = "gene")
 sum(table(ABC_pos.ann.gr$gene) > 1)
 
@@ -298,6 +306,8 @@ gene_pos.ov <- findOverlaps(bins_20k.gr,gene_pos.gr)
 
 gene.bin <- data.frame(id = gene_pos.ov@from,
                           gene = gene_pos.gr[gene_pos.ov@to]$gene)
+                          
+# genes: genes located in the same 20 kb bin
 gene.bin <- gene.bin %>% group_by(id) %>%
   mutate(ngenes = n_distinct(gene),
          genes = paste(gene,collapse = ","))
