@@ -15,6 +15,11 @@ resolutions = config['resolution']
 run_dipc = config['run_dipc']
 run_model = config['run_model']
 
+# names of conda environments
+hic_env = config['hic_env']
+r_env = config['r_env']
+py2_env = config['py2_env']
+
 wildcard_constraints:
     sample="[0-9A-Za-z]+"
 
@@ -24,13 +29,13 @@ print(phases)
 print(reps)
 print(resolutions)
 print(run_dipc)
-# need wildcard for enzymes
 
 fragments = '../virtual_digest/' + enzyme + '_' + reference + '.vd.fragments.parquet'
 chromsizes = '../refgenome/' + reference + '.rg.chromsizes'
 print(fragments)
 print(chromsizes)
 
+### OUTPUTS ------------------------------------------------------------------
 # filtration output files
 filter_pq = expand("{enzyme}_{sample}_{ref}_{phase}.contacts.filter.parquet",
     sample = samples,phase = phases,ref = reference, enzyme = enzyme),
@@ -61,6 +66,7 @@ model_align = expand("dip_c/{enzyme}_{sample}_{ref}_{phase}.{resolution}.align.c
 chr_cif = expand("dip_c/{enzyme}_{sample}_{ref}_{phase}.rep{rep}.{resolution}.n.cif",
     sample = samples,phase = phases,rep = reps,resolution = resolutions,ref = reference, enzyme = enzyme),
 
+# dip-C summaries
 RMSD_summary = "RMSD_summary.txt",
 cpg_3d_sum = expand("cpg_3d_{enzyme}_{ref}_{phase}_{resolution}_summary.csv",
     phase = phases,resolution = resolutions,ref = reference, enzyme = enzyme),
@@ -69,6 +75,7 @@ radi_pos_summary = expand("radical_pos_{enzyme}_{ref}_{phase}_{resolution}_summa
 intra_perc_summary = expand("intra_perc_{enzyme}_{ref}_{phase}_{resolution}_summary.csv",
             phase = phases,resolution = resolutions,ref = reference, enzyme = enzyme),
 
+# output groups
 filter_output = [filter_pq,clean_pq,filter_cool,high_cool,high_unflt_cool,stats]
 dipc_2d_output = [filter_pairs,stats,cpg_2d,cpg_2d_sum]
 model_output = [model_align,chr_cif,RMSD_summary,cpg_3d_sum,radi_pos_summary,intra_perc_summary]
@@ -98,8 +105,10 @@ rule filter:
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}.contacts.log",
     threads: 5,
+    params:
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.sample} {input.pq} {output} > {log}
         set +u; conda deactivate; set -u
@@ -113,9 +122,11 @@ rule apply_filter:
         "{enzyme}_{sample}_{ref}_{phase}.contacts.clean.parquet",
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}.applyFlt.log",
+    params:
+        env = r_env,
     threads: 5,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {input.pq} {output} > {log}
         set +u; conda deactivate; set -u
@@ -132,9 +143,10 @@ rule to_cooler:
         "logs/{enzyme}_{sample}_{ref}_{phase}.cooler.log",
     params:
         prefix = "cooler/{enzyme}_{sample}_{ref}_{phase}_filter",
+        env = hic_env,
     threads: 5,
     shell: """
-        set +u; source activate HiC; set -u
+        set +u; source activate {params.env}; set -u
         pore_c --dask-num-workers {threads} \
             contacts export {input.contacts} \
             cooler {params.prefix} \
@@ -153,8 +165,10 @@ rule high_order:
         unflt = temp("{enzyme}_{sample}_{ref}_{phase}.contacts.unflt.high.parquet"),
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}.high_order.log",
+    params:
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {input.flt} {output.flt} > {log}
         Rscript {input.script} \
@@ -176,9 +190,10 @@ rule high_order_cool:
     params:
         prefix_flt = "cooler/{enzyme}_{sample}_{ref}_{phase}_high",
         prefix_unflt = "cooler/{enzyme}_{sample}_{ref}_{phase}_high_unflt",
+        env = hic_env,
     threads: 5,
     shell: """
-        set +u; source activate HiC; set -u
+        set +u; source activate {params.env}; set -u
         pore_c --dask-num-workers {threads} \
             contacts export {input.flt} \
             cooler {params.prefix_flt} \
@@ -202,8 +217,10 @@ rule filter_stat:
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}.filter.log",
     threads: 2,
+    params:
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.sample} \
             {wildcards.enzyme} \
@@ -223,8 +240,10 @@ rule porec_stat:
         temp("{sample}_{enzyme}_{ref}_{phase}_pore_c_stats.txt"),
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}.porec_stat.log",
+    params:
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.sample} \
             {wildcards.enzyme} \
@@ -249,10 +268,11 @@ rule merge_stat:
         high_order = "merged_{enzyme}_{ref}_{phase}_high_order_summary.csv",
     params:
         phase = config['phase'],
+        env = r_env,
     log:
         "logs/merged_{enzyme}_{ref}_{phase}_stat.log",
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
                 {wildcards.enzyme} \
                 {wildcards.ref} \
@@ -272,10 +292,11 @@ rule to_phased_pairs:
         "logs/{enzyme}_{sample}_{ref}_{phase}.to_pairs.log",
     params:
         tmp = "pairs/{enzyme}_{sample}_{ref}_{phase}_filter.tmp",
-        header = "pairs/{enzyme}_{sample}_{ref}_{phase}_filter.pairs.header"
+        header = "pairs/{enzyme}_{sample}_{ref}_{phase}_filter.pairs.header",
+        env = r_env,
     threads: 5,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {input.contacts} \
             {params.tmp} > {log}
@@ -296,8 +317,10 @@ rule sort_pairs:
     output:
         temp("pairs/{enzyme}_{sample}_{ref}_{phase}_sort.pairs.gz"),
     threads: 2,
+    params:
+        env = hic_env,
     shell: """
-        set +u; source activate HiC; set -u
+        set +u; source activate {params.env}; set -u
         pairtools sort {input} --nproc {threads} | pigz > {output}
         set +u; conda deactivate; set -u
     """
@@ -307,13 +330,14 @@ rule sort_pairs:
 rule filter_pairs:
     input:
         pair = rules.sort_pairs.output,
-        par_bed = config['par_bed'],
+        par_bed = pip_dir + reference + '_par_region.bed',
     output:
         "pairs/{enzyme}_{sample}_{ref}_{phase}_filter_sort.pairs.gz",
     params:
         gender = config['gender'],
+        env = py2_env,
     shell: """
-        set +u; source activate LJS_py2; set -u
+        set +u; source activate {params.env}; set -u
         # for female
         if [ {params.gender} == "female" ];then  
             hickit.js chronly -y {input.pair} | pigz > {output}
@@ -333,10 +357,13 @@ rule hickit_impute:
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}.hickit_impute.log",
     params:
-        "hickit/{enzyme}_{sample}_{ref}_{phase}.imput.pairs",
+        prefix = "hickit/{enzyme}_{sample}_{ref}_{phase}.imput.pairs",
+        env = py2_env,
     shell: """
-        {input.hickit} -i {input.pairs} -u -o {params} 2>{log}
+        set +u; source activate {params.env}; set -u
+        {input.hickit} -i {input.pairs} -u -o {params.prefix} 2>{log}
         pigz {params}
+        set +u; conda deactivate; set -u
     """
 
 rule hickit_model:
@@ -385,8 +412,10 @@ rule clean_cons:
     output:
         tmp = temp("hickit/{enzyme}_{sample}_{ref}_{phase}.rep{rep}.{resolution}.dip-c.3dg"),
         tdg = "dip_c/{enzyme}_{sample}_{ref}_{phase}.rep{rep}.{resolution}.clean.3dg",
+    params:
+        env = py2_env,
     shell: """
-        set +u; source activate LJS_py2; set -u
+        set +u; source activate {params.env}; set -u
         {input.rescale} {input.tdg}
         dip-c clean3 -c {input.impute} {output.tmp} > {output.tdg}
         set +u; conda deactivate; set -u
@@ -399,12 +428,13 @@ rule dipc_align:
     output:
         "dip_c/{enzyme}_{sample}_{ref}_{phase}.{resolution}.align.color",
     params:
-        "dip_c/{enzyme}_{sample}_{ref}_{phase}.{resolution}.",
+        prefix = "dip_c/{enzyme}_{sample}_{ref}_{phase}.{resolution}.",
+        env = py2_env,
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}_{resolution}_dipc_align.log",
     shell: """
-        set +u; source activate LJS_py2; set -u
-        dip-c align -o {params} \
+        set +u; source activate {params.env}; set -u
+        dip-c align -o {params.prefix} \
             {input} \
             2> {log} \
             > {output}
@@ -443,8 +473,10 @@ rule dipc_2d_color:
         "dip_c/{enzyme}_{sample}_{ref}_{phase}_filter_sort.cpg_b1m.color2",
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}_dipc_2d_color.log",
+    params:
+        env = py2_env,
     shell: """
-        set +u; source activate LJS_py2; set -u
+        set +u; source activate {params.env}; set -u
         dip-c color2 -b1000000 -H -c {input.cpg1m} \
             -s {input.contact} > {output} 2> {log}
         set +u; conda deactivate; set -u
@@ -463,8 +495,9 @@ rule cpg_2d_summary:
         indir = "dip_c",
         pattern1 = "_{ref}_{phase}",
         pattern2 = "_filter_sort.cpg_b1m.color2",
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.enzyme} \
             {params.indir} \
@@ -489,8 +522,10 @@ rule dipc_3d_color:
         label_cif = "dip_c/{enzyme}_{sample}_{ref}_{phase}.rep{rep}.{resolution}.label_n.cif",
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}_rep{rep}_{resolution}_dipc_3d_color.log",
+    params:
+        env = py2_env,
     shell: """
-        set +u; source activate LJS_py2; set -u
+        set +u; source activate {params.env}; set -u
         dip-c color -c {input.cpg} -s3 {input.tdg} > {output.cpg_color} 2> {log}
         dip-c vis -c {output.cpg_color} {input.tdg} > {output.cpg_cif} 2>> {log}
         
@@ -519,8 +554,9 @@ rule cpg_3d_summary:
         indir = "dip_c",
         pattern1 = "_{ref}_{phase}.",
         pattern2 = ".{resolution}.cpg_s3.color",
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.enzyme} \
             {params.indir} \
@@ -537,8 +573,10 @@ rule dipc_radical_pos:
         temp("dip_c/{enzyme}_{sample}_{ref}_{phase}.rep{rep}.{resolution}.radical_pos.color"),
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}_rep{rep}_{resolution}_radical_pos.log",
+    params:
+        env = py2_env,
     shell: """
-        set +u; source activate LJS_py2; set -u
+        set +u; source activate {params.env}; set -u
         dip-c color -C {input.tdg} > {output} 2> {log}
         set +u; conda deactivate; set -u
     """
@@ -558,8 +596,9 @@ rule radical_3d_summary:
         indir = "dip_c",
         pattern1 = "_{ref}_{phase}.",
         pattern2 = ".{resolution}.radical_pos.color",
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.enzyme} \
             {params.indir} \
@@ -576,8 +615,10 @@ rule dipc_intra_perc:
         temp("dip_c/{enzyme}_{sample}_{ref}_{phase}.rep{rep}.{resolution}.intra.color"),
     log:
         "logs/{enzyme}_{sample}_{ref}_{phase}_rep{rep}_{resolution}_intra.log",
+    params:
+        env = py2_env,
     shell: """
-        set +u; source activate LJS_py2; set -u
+        set +u; source activate {params.env}; set -u
         dip-c color -i3 {input.tdg} > {output} 2> {log}
         set +u; conda deactivate; set -u
     """
@@ -597,8 +638,9 @@ rule intra_perc_summary:
         indir = "dip_c",
         pattern1 = "_{ref}_{phase}.",
         pattern2 = ".{resolution}.intra.color",
+        env = r_env,
     shell: """
-        set +u; source activate r_env; set -u
+        set +u; source activate {params.env}; set -u
         Rscript {input.script} \
             {wildcards.enzyme} \
             {params.indir} \

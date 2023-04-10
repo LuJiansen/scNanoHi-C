@@ -1,0 +1,13 @@
+name: hic_env
+channels:
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - nanoplexer
+  - seqkit
+  - pore-c
+  - pairtools
+  - cooler
+  - cutadapt

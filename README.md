@@ -1,10 +1,24 @@
 # scNanoHi-C
 
-Last edited time: March 25, 2023 9:52 PM
+---
 
 ## Introduction
 
 scNanoHi-C is a single-cell long-read concatemer sequencing method which could be used to investigate the higher-order 3D genomic structures in individual cells. This repository contains snakemeke workflows to preprocess scNanoHi-C data and other codes for analyses in our paper.
+
+## Dependencies
+
+scNanoHi-C is based on [Snakemake](https://snakemake.readthedocs.io/en/stable/) framework and conda enrivonments. Install dependencies and environments as follows:
+
+```bash
+conda install -c bioconda snakemake
+# create conda environment
+conda env create -f r_env.yaml
+conda env create -f hic_env.yaml
+conda env create -f py2_env.yaml
+```
+
+Then, [dip-c](https://github.com/tanlongzhi/dip-c) and [hickit](https://github.com/lh3/hickit) should be installed under the py2_env (for 3D modelling).
 
 ## Usage
 

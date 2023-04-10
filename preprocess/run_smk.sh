@@ -1,8 +1,7 @@
 #!/bin/bash
-base_dir="/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen"
-source ${base_dir}/source/ljs_bashrc.sh
-source activate snakemake
-pipdir=${base_dir}/Github/Pipeline/scHic
+
+source activate snakemake # activate your environment containing snakemake
+pipdir=/path/to/scNanoHi-C/pipeline
 njob=100
 
 read -p "Run scNanoHi-C snakemake pipeline? [y/dry/n]:" option

@@ -180,7 +180,6 @@ gene.range <- lapply(gene_pos.flt$gene, function(x){
 names(gene.range) <- gene_pos.flt$gene
 
 saveRDS(gene.range,paste0("case/",prefix,"_ABC_used_regions.rds"))
-
 unique(gene_pos.flt$gene) %>% length()
 unique(ABC_pos.flt$gene) %>% length()
 

@@ -1,0 +1,17 @@
+name: py2_env
+channels:
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+  - schrodinger
+dependencies:
+  - python=2.7
+  - numpy
+  - scipy
+  - seqtk
+  - pymol
+  - zlib
+  - rmsd
+  - mmcif_pdbx
+  - pigz

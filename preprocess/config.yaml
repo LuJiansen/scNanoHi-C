@@ -1,13 +1,21 @@
 prefix: "library"
 enzyme: "MboI"
 reference: "GRCh38"
-phase: "unphased"
+phase: "unphased" # used phase_set_id in the phased_vcfs.tsv of Pore-C-Snakemake config
 gender: "female"
+
+### name of conda environments
+hic_env: "hic_env"
+r_env: "r_env"
+py2_env: "py2_env"
+
+### paths
+pip_dir: "/path/to/folder/of/scNanoHi-C/pipeline/"
+hickit: "/path/to/hickit-master/hickit"
+dipc_dir: "/path/to/dip-c-master/"
+
+### options for 3D modelling
 run_dipc: True
 run_model: True
-pip_dir: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/Github/Pipeline/scHic/"
-hickit: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/software/hickit-master/hickit"
-dipc_dir: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/software/dip-c-master/"
-par_bed: "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/database/GRCh38_ref/hg38_par_region.bed"
-reps: [1, 2, 3]
-resolution: ['1m','100k','50k']
+reps: [1, 2, 3]  # replications of 3D modelling
+resolution: ['1m','100k','50k'] # resolutions for 3D modelling

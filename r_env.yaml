@@ -1,0 +1,15 @@
+name: r_env
+channels:
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base
+  - r-essentials
+  - r-arrow
+  - r-dplyr
+  - r-reshape2
+  - r-tidyverse
+  - r-tibble
+  - bioconductor-genomicranges

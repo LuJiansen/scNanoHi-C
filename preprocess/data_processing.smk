@@ -1,5 +1,7 @@
 pip_dir = "/gpfs1/tangfuchou_pkuhpc/tangfuchou_test/lujiansen/Github/Pipeline/scHic/"
-SAMPLE = None
+hic_env = "hic_env"
+
+SAMPLE = None # DO NOT modified this
 
 def raw_data_files(wildcards):
     ck_output = checkpoints.demultiplex.get(**wildcards).output[0]
@@ -40,9 +42,10 @@ checkpoint demultiplex:
     params:
         outdir = "raw_data",
         threads_used = 16,
+        env = hic_env,
     threads: 20,
     shell: """
-        set +u; source activate nanopore; set -u
+        set +u; source activate {params.env}; set -u
         nanoplexer \
             -b {input.barcode} \
             -t {params.threads_used} \
@@ -60,8 +63,10 @@ rule cutadapt:
     log:
         "log/{sample}_cutadapt.log",
     threads: 5,
+    params:
+        env = hic_env,
     shell: """
-        set +u; source activate cutadaptenv; set -u
+        set +u; source activate {params.env}; set -u
         cutadapt \
         -g AATGATACGGCGACCACCGAGATCT \
         -g TCGTCGGCAGCGTC \
@@ -86,9 +91,13 @@ rule raw_data_stats:
     output:
         "raw_fastq.stats",
     threads: 10,
+    params:
+        env = hic_env,
     shell: """
+        set +u; source activate {params.env}; set -u
         seqkit stats -a -T -j {threads} \
             {input.fq} > {output}
+        set +u; conda deactivate; set -u
     """
 
 rule trim_data_stats:
@@ -97,9 +106,13 @@ rule trim_data_stats:
     output:
         "trim_fastq.stats",
     threads: 10,
+    params:
+        env = hic_env,
     shell: """
+        set +u; source activate {params.env}; set -u
         seqkit stats -a -T -j {threads} \
             {input.fq} > {output}
+        set +u; conda deactivate; set -u
     """
 
 rule check_datasize:
