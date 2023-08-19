@@ -35,7 +35,6 @@ rule barcode_generate:
 checkpoint demultiplex:
     input:
         barcode = rules.barcode_generate.output,
-        script = pip_dir + 'nanoplexer.sh',
         fq = "pass.fastq.gz",
     output:
         directory("raw_data"),
