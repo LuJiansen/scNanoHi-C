@@ -27,6 +27,22 @@ cpg.flt <- cpg_rank(cpg.mg.used[,cell.used])
 
 cpg.flt.pca <- prcomp(t(cpg.flt)) 
 
+plot_pca_var <- function(pca,n){
+  sum <- summary(pca)
+  sum$importance[2,1:n] %>% 
+    as.data.frame() %>% `colnames<-`("Var") %>%
+    mutate(name = factor(rownames(.),levels = rownames(.))) %>%
+    ggplot(.,aes(x=name,y=Var)) +
+    geom_point() +
+    geom_line(group=1) +
+    theme_bw() +
+    xlab("") +ylab("Explained variance %") +
+    labs(title = "percentage of explained variance of PC") +
+    theme(panel.grid = element_blank()) -> p
+  return(list(sum = sum,
+              plot = p))
+}
+
 cpg.flt.pca.var <- plot_pca_var(cpg.flt.pca,10)
 pdf("comp_pca/CpG_2d_PCA_Var_rank_flt_20221209.pdf",width = 4,height = 4)
 cpg.flt.pca.var$plot
