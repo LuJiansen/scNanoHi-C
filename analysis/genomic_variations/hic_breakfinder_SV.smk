@@ -9,8 +9,6 @@ with open(sample_list,'r') as f:
 print(samples)
 phases = config["phase"]
 reference = config["reference"]
-reps = config['reps']
-resolutions = config['resolution']
 
 chromsizes = '../refgenome/' + reference + '.rg.chromsizes'
 fa = '../refgenome/' + reference + '.rg.fa'
@@ -20,8 +18,6 @@ wildcard_constraints:
 
 print(reference)
 print(phases)
-print(reps)
-print(resolutions)
 
 rule all:
     input:
@@ -93,18 +89,3 @@ rule hic_breakfinder:
         --name {params}
         set +u; conda deactivate; set -u
     """
-
-rule merge_cool:
-    input:
-        mcool = expand("cooler/MboI_{sample}_{ref}_{phase}_chronly_sort.mcool",
-        sample = samples, ref = reference, phase = phases),
-    output:
-        "merged.cool",
-    shell: """
-        set +u; source activate neoloop; set -u
-        ls {input.mcool} |
-        sed 's/mcool/mcool\\:\\:\\/resolutions\\/{wildcards.res}/g' |
-        xargs cooler merge {output}
-        set +u; conda deactivate; set -u
-    """
-    
