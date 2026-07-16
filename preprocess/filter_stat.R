@@ -50,7 +50,7 @@ order_stat <- function(flt){
 mn_phased <- function(flt){
   df <- unique(rbind(flt[,c("read_name","align1_align_idx","align1_fragment_id","align1_haplotype")] %>%
                        `colnames<-`(c("read_idx","align_idx","align_fragment_id","haplotype")),
-                     flt[,c("read_name","align1_align_idx","align2_fragment_id","align2_haplotype")] %>%
+                     flt[,c("read_name","align2_align_idx","align2_fragment_id","align2_haplotype")] %>%
                        `colnames<-`(c("read_idx","align_idx","align_fragment_id","haplotype"))))
   dim(df)
   dim(unique(df[1:4]))
